@@ -1,20 +1,37 @@
 #!/bin/bash
 
-# Скрипт для загрузки переменных из .env и запуска terraform
-
-# Проверка, что файл .env существует
+# Проверка наличия файла .env
 if [ ! -f .env ]; then
-  echo "Файл .env не найден!"
+  echo [translate:"Файл .env не найден!"]
   exit 1
 fi
 
-# Загружаем переменные окружения из .env
+# Загрузка переменных окружения из .env
 set -o allexport
 source .env
 set +o allexport
 
-# Инициализация terraform (инициализирует backend и плагины)
+# Инициализация terraform, инициализация backend и плагинов
 terraform init
+
+# Функция создания workspace, если его нет
+create_workspace_if_not_exists() {
+  local workspace_name=$1
+  if terraform workspace list | grep -qw "$workspace_name"; then
+    echo [translate:"Workspace"] "'$workspace_name'" [translate:"уже существует, переключаемся на него"]
+  else
+    echo [translate:"Создаём workspace"] "'$workspace_name'"
+    terraform workspace new "$workspace_name"
+  fi
+}
+
+# Создание трёх workspace при их отсутствии
+create_workspace_if_not_exists qa
+create_workspace_if_not_exists staging
+create_workspace_if_not_exists production
+
+# Переключение на workspace по умолчанию (qa)
+terraform workspace select qa
 
 # Применение конфигурации terraform
 terraform apply -auto-approve
