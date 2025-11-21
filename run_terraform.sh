@@ -18,7 +18,7 @@ terraform init
 create_workspace_if_not_exists() {
   local workspace_name=$1
   if terraform workspace list | grep -qw "$workspace_name"; then
-    echo [translate:"Workspace"] "'$workspace_name'" [translate:"уже существует, переключаемся на него"]
+    echo [translate:"Workspace"] "'$workspace_name'" [translate:"уже существует"]
   else
     echo [translate:"Создаём workspace"] "'$workspace_name'"
     terraform workspace new "$workspace_name"
@@ -34,4 +34,4 @@ create_workspace_if_not_exists production
 terraform workspace select qa
 
 # Применение конфигурации terraform
-terraform apply -auto-approve
+terraform apply -var-file="domain.tfvars" -auto-approve 
