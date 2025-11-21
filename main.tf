@@ -62,7 +62,7 @@ resource "yandex_storage_bucket" "open-bucket" {
     certificate_id = data.yandex_cm_certificate.cert_id.id
   }
 
-  depends_on = [data.yandex_cm_certificate.cert_id]
+  depends_on = [ data.yandex_cm_certificate.cert_id ]
 }
 
 
@@ -91,7 +91,7 @@ resource "yandex_dns_recordset" "cname" {
   name    = "@"
   type    = "CNAME"
   ttl     = 600
-  data    = ["${terraform.workspace}.${var.domain}.website.yandexcloud.net"]
+  data    = [ "${terraform.workspace}.${var.domain}.website.yandexcloud.net" ]
 }
 
 
@@ -99,7 +99,7 @@ resource "yandex_dns_recordset" "cname" {
 
 resource "yandex_cm_certificate" "cert" {
   name    = "cert"
-  domains = ["${var.domain}"]
+  domains = [ "${var.domain}" ]
 
   managed {
     challenge_type = "DNS_CNAME"
@@ -114,7 +114,7 @@ resource "yandex_dns_recordset" "cert" {
   zone_id = local.dns_zone_id
   name    = yandex_cm_certificate.cert.challenges[count.index].dns_name
   type    = yandex_cm_certificate.cert.challenges[count.index].dns_type
-  data    = [yandex_cm_certificate.cert.challenges[count.index].dns_value]
+  data    = [ yandex_cm_certificate.cert.challenges[count.index].dns_value ]
   ttl     = 600
 }
 
@@ -122,8 +122,7 @@ resource "yandex_dns_recordset" "cert" {
 # --- актуальная инфа об id сертификата напрямую с провайдера ---
 
 data "yandex_cm_certificate" "cert_id" {
-  depends_on     = [yandex_dns_recordset.cert]
-  certificate_id = yandex_cm_certificate.cert.id
+  depends_on     = [ yandex_dns_recordset.cert ]
 }
 
 
