@@ -42,8 +42,8 @@ terraform {
 
 # --- публичный бакет для шейринга статики ---
 
-resource "yandex_storage_bucket" "$${terraform.workspace}.open-bucket" {
-  bucket    = var.domain
+resource "yandex_storage_bucket" "open-bucket" {
+  bucket    = "${terraform.workspace}.${var.domain}"
   folder_id = var.folder_id
 
   # публичный доступ на чтение статики
