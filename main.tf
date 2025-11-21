@@ -12,10 +12,10 @@ locals {
 
 
 # --- бэкенд, опубликованный на приватном бакете YaCloud ---
+
 terraform {
 
   # коннектор к YaCloud API
-
   required_providers {
     yandex = {
       source = "yandex-cloud/yandex"
@@ -23,9 +23,7 @@ terraform {
   }
   required_version = ">= 0.13"
 
-
   # state файл проекта в отдельном приватном бакете
-
   backend "s3" {
     endpoints = {
       s3 = "https://storage.yandexcloud.net"
@@ -44,7 +42,7 @@ terraform {
 
 # --- публичный бакет для шейринга статики ---
 
-resource "yandex_storage_bucket" "open-bucket" {
+resource "yandex_storage_bucket" "$${terraform.workspace}.open-bucket" {
   bucket    = var.domain
   folder_id = var.folder_id
 
@@ -85,7 +83,9 @@ resource "yandex_dns_zone" "zone" {
   public = true
 }
 
+
 # --- DNS CNAME запись, поддомен с именем workspace ---
+
 resource "yandex_dns_recordset" "cname" {
   zone_id = yandex_dns_zone.zone.id
   name    = "@"
@@ -94,7 +94,9 @@ resource "yandex_dns_recordset" "cname" {
   data    = ["${terraform.workspace}.${var.domain}.website.yandexcloud.net"]
 }
 
+
 # --- выпуск Let's Encrypt сертификата ---
+
 resource "yandex_cm_certificate" "cert" {
   name    = "cert"
   domains = ["${var.domain}"]
@@ -104,7 +106,9 @@ resource "yandex_cm_certificate" "cert" {
   }  
 }
 
+
 # --- DNS запись подтверждения владения доменом, сертификат Let's Encrypt ---
+
 resource "yandex_dns_recordset" "cert" {
   count   = length(yandex_cm_certificate.cert.challenges)
   zone_id = local.dns_zone_id
@@ -114,13 +118,17 @@ resource "yandex_dns_recordset" "cert" {
   ttl     = 600
 }
 
+
 # --- актуальная инфа об id сертификата напрямую с провайдера ---
+
 data "yandex_cm_certificate" "cert_id" {
   depends_on     = [yandex_dns_recordset.cert]
   certificate_id = yandex_cm_certificate.cert.id
 }
 
+
 # --- Провайдер YaCloud ---
+
 provider "yandex" {
   zone = "ru-central1-a"
 }
